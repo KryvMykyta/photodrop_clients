@@ -24,8 +24,8 @@ export class StripeController {
       {},
       {},
       {
-        successLink?: string;
-        failLink?: string;
+        successLink: string;
+        failLink: string;
         albumID: string;
         phoneNumber: string;
       },
@@ -34,7 +34,7 @@ export class StripeController {
     res: Response
   ) => {
     try {
-      const { albumID, phoneNumber } = req.body;
+      const { albumID, phoneNumber,successLink,failLink } = req.body;
       const session = await this.stripe.checkout.sessions.create({
         mode: "payment",
         payment_method_types: ["card"],
@@ -50,8 +50,8 @@ export class StripeController {
             quantity: 1,
           },
         ],
-        success_url: "https://stripe.com/",
-        cancel_url: "https://stripe.com/docs/financial-services",
+        success_url: successLink,
+        cancel_url: failLink,
         metadata: {
           phoneNumber,
           albumID,

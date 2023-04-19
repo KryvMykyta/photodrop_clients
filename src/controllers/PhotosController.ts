@@ -24,25 +24,25 @@ export class PhotosController {
     this.photoRepository = utilsClasses.photoRepository
     this.router.get("/photos",this.authMiddleware.isAuthorized, this.getPhotos);
     this.router.get("/albums",this.authMiddleware.isAuthorized, this.getAlbums)
-    this.router.get('/allPhotos', this.authMiddleware.isAuthorized, this.getAllPhotos)
+    // this.router.get('/allPhotos', this.authMiddleware.isAuthorized, this.getAllPhotos)
   }
 
-  public getAllPhotos = async (
-    req: Request<{}, {}, { phone: string }, {}>,
-    res: Response
-  ) => {
-    try {
-      const { phone } = req.body;
-      const photos = await this.photoRepository.getUsersAllPhotos(phone)
-      return res.status(200).send(photos);
-    } catch (err) {
-      console.log(err);
-      if (err instanceof ErrorGenerator) {
-        return res.status(err.status).send(err.message);
-      }
-      return res.status(500).send("Server Error");
-    }
-  };
+  // public getAllPhotos = async (
+  //   req: Request<{}, {}, { phone: string }, {}>,
+  //   res: Response
+  // ) => {
+  //   try {
+  //     const { phone } = req.body;
+  //     const photos = await this.photoRepository.getUsersAllPhotos(phone)
+  //     return res.status(200).send(photos);
+  //   } catch (err) {
+  //     console.log(err);
+  //     if (err instanceof ErrorGenerator) {
+  //       return res.status(err.status).send(err.message);
+  //     }
+  //     return res.status(500).send("Server Error");
+  //   }
+  // };
 
 
 
@@ -71,7 +71,7 @@ export class PhotosController {
   ) => {
     try {
       const { phone } = req.body;
-      const albums = await this.photoRepository.getAlbumsWithUser(phone)
+      const albums = (await this.photoRepository.getAlbumsWithUser(phone)).map((albumRecord) => {return albumRecord.albumID})
       return res.status(200).send(albums);
     } catch (err) {
       console.log(err);
