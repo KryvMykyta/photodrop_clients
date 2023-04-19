@@ -1,0 +1,38 @@
+{
+  "name": "photodrop_clients",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "esbuild src/app.ts --platform=node --target=node16 --format=cjs --bundle --minify --main-fields=main --outfile=dist/app.js --external:pg-native --external:better-sqlite3",
+    "server": "node dist/app.js",
+    "start": "npm run build && npm run server"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "better-sqlite3": "^8.3.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.3",
+    "drizzle-orm": "^0.23.13",
+    "express": "^4.18.2",
+    "jsonwebtoken": "^9.0.0",
+    "node-telegram-bot-api": "^0.61.0",
+    "otp-generator": "^4.0.1",
+    "pg": "^8.10.0",
+    "stripe": "^12.1.1",
+    "stripe-event-types": "^2.3.0",
+    "typescript": "^5.0.4"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.4",
+    "@types/cors": "^2.8.13",
+    "@types/express": "^4.17.17",
+    "@types/jsonwebtoken": "^9.0.1",
+    "@types/node-telegram-bot-api": "^0.61.6",
+    "@types/otp-generator": "^4.0.0",
+    "@types/pg": "^8.6.6",
+    "drizzle-kit": "^0.17.4"
+  }
+}

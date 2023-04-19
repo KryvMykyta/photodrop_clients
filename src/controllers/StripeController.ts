@@ -1,0 +1,121 @@
+import { ErrorGenerator } from "./../utils/ErrorGenerator";
+import { UtilsClasses } from "./../app";
+import { Request, Response, Router } from "express";
+import Stripe from "stripe";
+import { UsersRepository } from "repository/UsersRepository";
+
+// import Stripe from 'stripe-event-types'
+
+export class StripeController {
+  router: Router;
+  path: string;
+  stripe: Stripe;
+  usersRepository: UsersRepository;
+  constructor(path: string, utilsClasses: UtilsClasses) {
+    (this.router = Router()), (this.path = path);
+    this.stripe = utilsClasses.stripe;
+    this.usersRepository = utilsClasses.usersRepository;
+    this.router.post("/payment", this.createPaymentLink);
+    this.router.post("/webhook", this.handleWebhook);
+  }
+
+  public createPaymentLink = async (
+    req: Request<
+      {},
+      {},
+      {
+        successLink?: string;
+        failLink?: string;
+        albumID: string;
+        phoneNumber: string;
+      },
+      {}
+    >,
+    res: Response
+  ) => {
+    try {
+      const { albumID, phoneNumber } = req.body;
+      const session = await this.stripe.checkout.sessions.create({
+        mode: "payment",
+        payment_method_types: ["card"],
+        line_items: [
+          {
+            price_data: {
+              currency: "usd",
+              product_data: {
+                name: albumID,
+              },
+              unit_amount: 5000,
+            },
+            quantity: 1,
+          },
+        ],
+        success_url: "https://stripe.com/",
+        cancel_url: "https://stripe.com/docs/financial-services",
+        metadata: {
+          phoneNumber,
+          albumID,
+        },
+      });
+      return res.status(200).send(session.url);
+    } catch (err) {
+      console.log(err);
+      if (err instanceof ErrorGenerator) {
+        return res.status(err.status).send(err.message);
+      }
+      return res.status(500).send("Server Error");
+    }
+  };
+
+  // public handleWebhook = async (
+  //   req: Request<{}, {}, { phoneNumber: string; otp: string }, {}>,
+  //   res: Response
+  // ) => {
+  //   try {
+  //   } catch (err) {
+  //     console.log(err);
+  //     if (err instanceof ErrorGenerator) {
+  //       return res.status(err.status).send(err.message);
+  //     }
+  //     return res.status(500).send("Server Error");
+  //   }
+  // };
+
+  public handleWebhook = async (
+    request: Request<{}, {}, string | Buffer, {}>,
+    response: Response
+  ) => {
+    try {
+      const endpointSecret = "whsec_Bu9U88ouNoFKiGm38TKEX4689QJMntpc";
+      const sig = request.headers["stripe-signature"] as string;
+      console.log(sig);
+
+      /// <reference types="stripe-event-types" />
+      const event = this.stripe.webhooks.constructEvent(
+        request.body,
+        sig,
+        endpointSecret
+      ) as Stripe.DiscriminatedEvent;
+
+      switch (event.type) {
+        case "checkout.session.completed":
+          const checkoutSessionCompleted = event.data.object;
+          console.log(checkoutSessionCompleted);
+          // Then define and call a function to handle the event checkout.session.completed
+          const { metadata } = checkoutSessionCompleted;
+          if (!metadata || !metadata.phoneNumber || !metadata.albumID) return response.status(502).send("Bad request");
+          const { phoneNumber, albumID } = metadata;
+          await this.usersRepository.addAlbum(phoneNumber, albumID);
+          // ... handle other event types
+          break;
+        default:
+          console.log(`Unhandled event type ${event.type}`);
+      }
+
+      // Return a 200 response to acknowledge receipt of the event
+      return response.send();
+    } catch (err) {
+      return response.status(500).send(err);
+    }
+  };
+}
