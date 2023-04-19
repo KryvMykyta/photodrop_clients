@@ -6,4 +6,9 @@ export const users = pgTable("users", {
   albums: text("albums").array(),
 });
 
+export const userphotos = pgTable("userphotos", {
+  phone: text("phone").notNull(),
+  photoID: text("photoid").notNull(),
+});
+
 export type UsersType = InferModel<typeof users>;
