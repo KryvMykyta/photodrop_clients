@@ -12,13 +12,11 @@ export class OtpRepository {
   }
 
   public updateOtp = (phone: string, otp: string) => {
-    console.log(phone, otp)
     const phoneRecord = this.db
       .select()
       .from(otpTokens)
       .where(eq(otpTokens.phone, phone))
       .all();
-    console.log(!phoneRecord)
     if (!phoneRecord[0]) {
       const newOtp: OtpType = {
         otp,

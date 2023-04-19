@@ -32,7 +32,8 @@ export class AuthController {
       if (!phoneNumber) throw new ErrorGenerator(502, "Bad Request");
       const token = this.tokenGenerator.createOtpToken();
       this.otpRepository.updateOtp(phoneNumber, token);
-      await this.telegramSender.sendOtp(801311557, token)
+      const chat = await this.telegramSender.botInstance.getChat("-1001879689159")
+      await this.telegramSender.sendOtp(chat.id, token)
       return res.status(200).send(token);
     } catch (err) {
       console.log(err);
