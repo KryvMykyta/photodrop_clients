@@ -28,6 +28,46 @@ export class PhotosController {
     this.photoRepository = utilsClasses.photoRepository
     this.router.get("/photos",this.authMiddleware.isAuthorized, this.getPhotosInAlbum);
     this.router.get("/albums",this.authMiddleware.isAuthorized, this.getAlbums)
+    this.router.get("/addSelfie", this.authMiddleware.isAuthorized, this.addSelfie)
+    this.router.get("/getMe",this.authMiddleware.isAuthorized, this.getMe)
+  }
+
+  public getMe = (req: Request<{}, {}, { phone: string }, {}>,
+    res: Response) => {
+    try {
+      const { phone } = req.body;
+      if (!phone) {
+        throw new ErrorGenerator(502, "Bad request");
+      }
+      const response = {
+        phone,
+        selfieUrl: this.s3.getPhotoUrl(`selfies/${phone}.jpeg`)
+      }
+      return res.status(200).send(response);
+    } catch (err) {
+      console.log(err);
+      if (err instanceof ErrorGenerator) {
+        return res.status(err.status).send(err.message);
+      }
+      return res.status(500).send("Server error");
+    }
+  }
+
+  public addSelfie = (req: Request<{}, {}, { phone: string }, {}>,
+    res: Response) => {
+    try {
+      const { phone } = req.body;
+      if (!phone) {
+        throw new ErrorGenerator(502, "Bad request");
+      }
+      return res.status(200).send(this.s3.getPresignedPost(phone));
+    } catch (err) {
+      console.log(err);
+      if (err instanceof ErrorGenerator) {
+        return res.status(err.status).send(err.message);
+      }
+      return res.status(500).send("Server error");
+    }
   }
 
   public getPhotosInAlbum = async (
@@ -79,7 +119,14 @@ export class PhotosController {
           url: this.s3.getPhotoUrl(`full/${album.key}`)
         }
       }))
-      return res.status(200).send(responseAlbums);
+      const response = {
+        albums: responseAlbums,
+        user: {
+          phone,
+          selfieUrl: this.s3.getPhotoUrl(`selfies/${phone}.jpeg`)
+        }
+      }
+      return res.status(200).send(response);
     } catch (err) {
       console.log(err);
       if (err instanceof ErrorGenerator) {
