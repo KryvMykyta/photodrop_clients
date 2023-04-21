@@ -24,7 +24,12 @@ export class TokenGenerator {
   }
 
   public createOtpToken = () => {
-    const otp = otpGenerator.generate(6, { upperCaseAlphabets: false, specialChars: false });
+    const otp = otpGenerator.generate(6, { 
+      digits: true,
+      lowerCaseAlphabets: false,
+      upperCaseAlphabets: false,
+      specialChars: false 
+    });
     return otp
   }
 }
