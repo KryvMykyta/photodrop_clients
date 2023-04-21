@@ -32,7 +32,7 @@ export class PhotosController {
     this.router.get("/getMe",this.authMiddleware.isAuthorized, this.getMe)
   }
 
-  public getMe = (req: Request<{}, {}, { phone: string }, {}>,
+  public getMe = async (req: Request<{}, {}, { phone: string }, {}>,
     res: Response) => {
     try {
       const { phone } = req.body;
@@ -41,7 +41,7 @@ export class PhotosController {
       }
       const response = {
         phone,
-        selfieUrl: this.s3.getPhotoUrl(`selfies/${phone}.jpeg`)
+        selfieUrl: await this.s3.getSelfieUrl(`selfies/${phone}.jpeg`)
       }
       return res.status(200).send(response);
     } catch (err) {
@@ -123,7 +123,7 @@ export class PhotosController {
         albums: responseAlbums,
         user: {
           phone,
-          selfieUrl: this.s3.getPhotoUrl(`selfies/${phone}.jpeg`)
+          selfieUrl: await this.s3.getSelfieUrl(`selfies/${phone}.jpeg`)
         }
       }
       return res.status(200).send(response);
