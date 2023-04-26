@@ -163,6 +163,7 @@ export class PhotosController {
         const photosResponse = formattedRecords.map((record) => {
           return {
             photoID: record.photoID,
+            albumID: album.albumID,
             url: this.s3.getPhotoUrl(record.key),
           };
         });
