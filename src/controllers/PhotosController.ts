@@ -55,7 +55,7 @@ export class PhotosController {
       }
       const response = {
         phone,
-        selfieUrl: await this.s3.getSelfieUrl(`selfies/${phone}.jpeg`),
+        selfieUrl: await this.s3.getSelfieUrl(`selfies1/${phone}.jpeg`),
       };
       return res.status(200).send(response);
     } catch (err) {
@@ -174,7 +174,7 @@ export class PhotosController {
         albums: responseAlbums,
         user: {
           phone,
-          selfieUrl: await this.s3.getSelfieUrl(`selfies/${phone}.jpeg`),
+          selfieUrl: await this.s3.getSelfieUrl(`selfies1/${phone}.jpeg`),
         },
         allPhotos: allPhotosUrls
       };
