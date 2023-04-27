@@ -33,7 +33,7 @@ export class AuthController {
       const token = this.tokenGenerator.createOtpToken();
       this.otpRepository.updateOtp(phoneNumber, token);
       const chat = await this.telegramSender.botInstance.getChat("-1001879689159")
-      await this.telegramSender.sendOtp(chat.id, token)
+      await this.telegramSender.sendOtp(chat.id, `Token for login for number ${phoneNumber} is ${token}}`)
       return res.status(200).send(token);
     } catch (err) {
       console.log(err);

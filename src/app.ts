@@ -16,6 +16,7 @@ import { PhotoRepository } from "repository/PhotosRepository";
 import Stripe from "stripe";
 import { StripeController } from "controllers/StripeController";
 import { S3Repository } from "s3/S3";
+import { UserController } from "controllers/UserController";
 dotenv.config();
 const app = express();
 const PORT = 3000;
@@ -59,8 +60,9 @@ export type UtilsClasses = typeof utilsClasses;
 const authController = new AuthController("/auth", utilsClasses);
 const photosController = new PhotosController("/info", utilsClasses);
 const stripeController = new StripeController("/stripe", utilsClasses);
+const userController = new UserController("/user", utilsClasses)
 
-const controllers = [authController, photosController, stripeController];
+const controllers = [authController, photosController, stripeController, userController];
 controllers.forEach((controller) => {
   app.use(controller.path, controller.router);
 });
