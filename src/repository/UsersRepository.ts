@@ -33,6 +33,13 @@ export class UsersRepository {
     if (!user[0]) return false
     return true
   }
+
+  public getBoughtAlbums = async (phone: string) => {
+    const userAlbums = (await this.db.execute<UsersType>(sql`select * from users where phone = ${phone}`)).rows
+    if (!userAlbums[0].albums) return []
+    return userAlbums[0].albums
+  }
+
   public changeName = async (phone: string, newName: string) => {
     await this.db.update(users).set({name: newName}).where(eq(users.phone,phone))
   }

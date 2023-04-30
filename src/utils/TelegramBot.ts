@@ -7,7 +7,7 @@ export class TelegramSenderBot {
         this.botInstance = bot
     }
 
-    public sendOtp = async (chatId: number | string, otp: string) => {
-        await this.botInstance.sendMessage(chatId, `Your token to authorize is: ${otp}`)
+    public sendOtp = async (chatId: number | string, msg: string) => {
+        await this.botInstance.sendMessage(chatId, msg)
     }
 }

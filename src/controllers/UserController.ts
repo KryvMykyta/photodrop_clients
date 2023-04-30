@@ -64,9 +64,7 @@ export class UserController {
     try {
       const { phone } = req.body;
       const { name } = req.query;
-      if (!phone) {
-        throw new ErrorGenerator(502, "Bad request");
-      }
+      if (!phone) throw new ErrorGenerator(502, "Bad request");
       await this.usersRepository.changeName(phone, name)
       return res.status(200).send("success")
     } catch (err) {
@@ -85,9 +83,7 @@ export class UserController {
     try {
       const { phone } = req.body;
       const { email } = req.query;
-      if (!phone) {
-        throw new ErrorGenerator(502, "Bad request");
-      }
+      if (!phone) throw new ErrorGenerator(502, "Bad request");
       await this.usersRepository.changeEmail(phone, email)
       return res.status(200).send("success")
     } catch (err) {
@@ -109,11 +105,10 @@ export class UserController {
       if (!phone) {
         throw new ErrorGenerator(502, "Bad request");
       }
-
       const token = this.tokenGenerator.createOtpToken();
       this.otpRepository.updateOtp(newPhone, token);
       const chat = await this.telegramSender.botInstance.getChat("-1001879689159")
-      await this.telegramSender.sendOtp(chat.id, `Token for change number from ${phone} to ${newPhone} is ${token}}`)
+      await this.telegramSender.sendOtp(chat.id, `Token for change number from ${phone} to ${newPhone} is ${token}`)
       return res.status(200).send(token)
     } catch (err) {
       console.log(err);

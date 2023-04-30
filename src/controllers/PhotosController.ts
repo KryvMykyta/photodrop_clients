@@ -126,29 +126,19 @@ export class PhotosController {
       const { phone } = req.body;
       const albums = await this.photoRepository.getUsersPhotos(phone);
       const uniqueAlbums = new DataFormatter().getAlbumsOfUser(albums);
-      const responseAlbums = await Promise.all(
-        uniqueAlbums.map(async (album) => {
-          const isBought = await this.usersRepository.isBoughtAlbum(
-            phone,
-            album.albumID
-          );
+
+      //method with one time check albums
+      const boughtAlbums = await this.usersRepository.getBoughtAlbums(phone);
+      const responseAlbums = uniqueAlbums.map(async (album) => {
           return {
             albumID: album.albumID,
             name: album.name,
             date: album.date,
             location: album.location,
-            isPaid: isBought,
+            isPaid: boughtAlbums.includes(album.albumID),
             url: this.s3.getPhotoUrl(`thumbnail/${album.key}`),
           };
-          // return {
-          //   albumID: album.albumID,
-          //   name: album.name,
-          //   date: album.date,
-          //   location: album.location,
-          //   isPaid: isBought,
-          //   url: this.s3.getPhotoUrl(`full/${album.key}`),
-          // };
-        })
+        }
       );
 
       let allPhotosUrls: {
@@ -156,15 +146,11 @@ export class PhotosController {
         url: string;
       }[] = [];
       const photos = await this.photoRepository.getUsersPhotos(phone);
-      await Promise.all(uniqueAlbums.map(async (album) => {
-        const isBought = await this.usersRepository.isBoughtAlbum(
-          phone,
-          album.albumID
-        );
+      uniqueAlbums.map(async (album) => {
         const formattedRecords = new DataFormatter().getAlbumPhotos(
           photos,
           album.albumID,
-          isBought
+          boughtAlbums.includes(album.albumID)
         );
         const photosResponse = formattedRecords.map((record) => {
           return {
@@ -174,7 +160,50 @@ export class PhotosController {
           };
         });
         allPhotosUrls = [...allPhotosUrls, ...photosResponse]
-      }));
+      })
+
+      //method with checking every album
+      // const responseAlbums = await Promise.all(
+      //   uniqueAlbums.map(async (album) => {
+      //     const isBought = await this.usersRepository.isBoughtAlbum(
+      //       phone,
+      //       album.albumID
+      //     );
+      //     return {
+      //       albumID: album.albumID,
+      //       name: album.name,
+      //       date: album.date,
+      //       location: album.location,
+      //       isPaid: isBought,
+      //       url: this.s3.getPhotoUrl(`thumbnail/${album.key}`),
+      //     };
+      //   })
+      // );
+
+      // let allPhotosUrls: {
+      //   photoID: string;
+      //   url: string;
+      // }[] = [];
+      // const photos = await this.photoRepository.getUsersPhotos(phone);
+      // await Promise.all(uniqueAlbums.map(async (album) => {
+      //   const isBought = await this.usersRepository.isBoughtAlbum(
+      //     phone,
+      //     album.albumID
+      //   );
+      //   const formattedRecords = new DataFormatter().getAlbumPhotos(
+      //     photos,
+      //     album.albumID,
+      //     isBought
+      //   );
+      //   const photosResponse = formattedRecords.map((record) => {
+      //     return {
+      //       photoID: record.photoID,
+      //       albumID: album.albumID,
+      //       url: this.s3.getPhotoUrl(record.key),
+      //     };
+      //   });
+      //   allPhotosUrls = [...allPhotosUrls, ...photosResponse]
+      // }));
 
       const response = {
         albums: responseAlbums,

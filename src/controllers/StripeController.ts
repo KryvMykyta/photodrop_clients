@@ -4,8 +4,6 @@ import { Request, Response, Router } from "express";
 import Stripe from "stripe";
 import { UsersRepository } from "repository/UsersRepository";
 
-// import Stripe from 'stripe-event-types'
-
 export class StripeController {
   router: Router;
   path: string;
@@ -66,20 +64,6 @@ export class StripeController {
       return res.status(500).send("Server Error");
     }
   };
-
-  // public handleWebhook = async (
-  //   req: Request<{}, {}, { phoneNumber: string; otp: string }, {}>,
-  //   res: Response
-  // ) => {
-  //   try {
-  //   } catch (err) {
-  //     console.log(err);
-  //     if (err instanceof ErrorGenerator) {
-  //       return res.status(err.status).send(err.message);
-  //     }
-  //     return res.status(500).send("Server Error");
-  //   }
-  // };
 
   public handleWebhook = async (
     request: Request<{}, {}, string | Buffer, {}>,
