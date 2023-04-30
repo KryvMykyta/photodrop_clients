@@ -129,7 +129,7 @@ export class PhotosController {
 
       //method with one time check albums
       const boughtAlbums = await this.usersRepository.getBoughtAlbums(phone);
-      const responseAlbums = uniqueAlbums.map(async (album) => {
+      const responseAlbums = uniqueAlbums.map((album) => {
           return {
             albumID: album.albumID,
             name: album.name,
@@ -146,7 +146,7 @@ export class PhotosController {
         url: string;
       }[] = [];
       const photos = await this.photoRepository.getUsersPhotos(phone);
-      uniqueAlbums.map(async (album) => {
+      uniqueAlbums.map((album) => {
         const formattedRecords = new DataFormatter().getAlbumPhotos(
           photos,
           album.albumID,
