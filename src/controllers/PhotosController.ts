@@ -135,11 +135,17 @@ export class PhotosController {
           if (isBought) {
             return {
               albumID: album.albumID,
+              name: album.name,
+              date: album.date,
+              location: album.location,
               url: this.s3.getPhotoUrl(`thumbnail/${album.key}`),
             };
           }
           return {
             albumID: album.albumID,
+            name: album.name,
+            date: album.date,
+            location: album.location,
             url: this.s3.getPhotoUrl(`full/${album.key}`),
           };
         })

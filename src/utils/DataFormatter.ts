@@ -2,6 +2,9 @@ type PhotosResponse = {
   photoID: string;
   albumID: string;
   login: string;
+  albumName: string | null;
+  albumDate: string | null;
+  location: string | null;
 }[];
 
 export class DataFormatter {
@@ -28,6 +31,9 @@ export class DataFormatter {
       return {
         albumID: record[0].albumID,
         key: `${record[0].login}/${record[0].albumID}/${record[0].photoID}`,
+        location: record[0].location,
+        date: record[0].albumDate,
+        name: record[0].albumName,
       };
     });
     return albumsResponse;
