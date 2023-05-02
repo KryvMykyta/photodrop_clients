@@ -2,18 +2,21 @@ import { ErrorGenerator } from "./../utils/ErrorGenerator";
 import { UtilsClasses } from "./../app";
 import { Request, Response, Router } from "express";
 import Stripe from "stripe";
-import { UsersRepository } from "repository/UsersRepository";
+import { UsersRepository } from "./../repository/UsersRepository";
+import { AuthMiddlewareClass } from "./../middlewares/AuthMiddleware";
 
 export class StripeController {
   router: Router;
   path: string;
   stripe: Stripe;
   usersRepository: UsersRepository;
+  authMiddleware: AuthMiddlewareClass;
   constructor(path: string, utilsClasses: UtilsClasses) {
     (this.router = Router()), (this.path = path);
     this.stripe = utilsClasses.stripe;
     this.usersRepository = utilsClasses.usersRepository;
-    this.router.post("/payment", this.createPaymentLink);
+    this.authMiddleware = utilsClasses.authMiddleware
+    this.router.post("/payment", this.authMiddleware.isAuthorized, this.createPaymentLink);
     this.router.post("/webhook", this.handleWebhook);
   }
 
@@ -25,14 +28,14 @@ export class StripeController {
         successLink: string;
         failLink: string;
         albumID: string;
-        phoneNumber: string;
+        phone: string;
       },
       {}
     >,
     res: Response
   ) => {
     try {
-      const { albumID, phoneNumber,successLink,failLink } = req.body;
+      const { albumID, phone ,successLink,failLink } = req.body;
       const session = await this.stripe.checkout.sessions.create({
         mode: "payment",
         payment_method_types: ["card"],
@@ -51,7 +54,7 @@ export class StripeController {
         success_url: successLink,
         cancel_url: failLink,
         metadata: {
-          phoneNumber,
+          phone,
           albumID,
         },
       });
