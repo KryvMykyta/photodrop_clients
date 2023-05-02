@@ -85,13 +85,16 @@ export class StripeController {
         case "checkout.session.completed":
           const checkoutSessionCompleted = event.data.object;
           console.log(checkoutSessionCompleted);
+          const status = checkoutSessionCompleted.payment_status
           // Then define and call a function to handle the event checkout.session.completed
-          const { metadata } = checkoutSessionCompleted;
-          if (!metadata || !metadata.phoneNumber || !metadata.albumID) return response.status(502).send("Bad request");
-          const { phoneNumber, albumID } = metadata;
-          await this.usersRepository.addAlbum(phoneNumber, albumID);
-          // ... handle other event types
-          break;
+          if (status === "paid") {
+            const { metadata } = checkoutSessionCompleted;
+            if (!metadata || !metadata.phoneNumber || !metadata.albumID) return response.status(502).send("Bad request");
+            const { phoneNumber, albumID } = metadata;
+            await this.usersRepository.addAlbum(phoneNumber, albumID);
+            // ... handle other event types
+            break;
+          }
         default:
           console.log(`Unhandled event type ${event.type}`);
       }
