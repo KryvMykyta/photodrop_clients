@@ -36,6 +36,7 @@ export class StripeController {
   ) => {
     try {
       const { albumID, phone ,successLink,failLink } = req.body;
+      if (await this.usersRepository.isBoughtAlbum(phone,albumID)) throw new ErrorGenerator(400, "You already bought this album");
       const session = await this.stripe.checkout.sessions.create({
         mode: "payment",
         payment_method_types: ["card"],
