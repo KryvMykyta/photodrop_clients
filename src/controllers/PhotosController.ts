@@ -42,7 +42,33 @@ export class PhotosController {
       this.addSelfie
     );
     this.router.get("/getMe", this.authMiddleware.isAuthorized, this.getMe);
+    this.router.get("/getPhoto", this.authMiddleware.isAuthorized, this.getPhoto);
   }
+
+  public getPhoto = async (
+    req: Request<{}, {}, { phone: string }, { photoID: string }>,
+    res: Response
+  ) => {
+    try {
+      const { phone } = req.body;
+      const { photoID } = req.query;
+      if (!phone || !photoID) {
+        throw new ErrorGenerator(502, "Bad request");
+      }
+      const photo = await this.photoRepository.getPhoto(photoID)
+      const {albumID, photographerLogin} = photo
+      const isBought = await this.usersRepository.isBoughtAlbum(phone, albumID)
+      const photoKey = isBought ? `original/${photographerLogin}/${albumID}/${photoID}` : `watermark/${photographerLogin}/${albumID}/${photoID}`
+      const responseURL = this.s3.getPhotoUrl(photoKey)
+      return res.status(200).send(responseURL);
+    } catch (err) {
+      console.log(err);
+      if (err instanceof ErrorGenerator) {
+        return res.status(err.status).send(err.message);
+      }
+      return res.status(500).send("Server error");
+    }
+  };
 
   public getMe = async (
     req: Request<{}, {}, { phone: string }, {}>,

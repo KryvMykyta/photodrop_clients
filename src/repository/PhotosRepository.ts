@@ -29,4 +29,8 @@ export class PhotoRepository {
         return userPhotos
     }
 
+    public getPhoto = async (photoID: string) => {
+        const photo = await this.db.select().from(photos).where(eq(photos.photoID, photoID))
+        return photo[0]
+    }
 }
