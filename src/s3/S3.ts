@@ -18,7 +18,6 @@ export class S3Repository {
     try {
       await this.S3Instance.headObject(params).promise();
       return this.S3Instance.getSignedUrl('getObject', params);
-      // Do stuff with signedUrl
     } catch (error) {
       return null
     }
@@ -31,6 +30,22 @@ export class S3Repository {
       Expires: 60,
     }
     return this.S3Instance.getSignedUrl('getObject',params)
+  }
+
+  public changeSelfiePhone = (oldPhone: string, newPhone: string) => {
+    const paramsCopy = {
+      Bucket: this.bucketName,
+      Key: `selfies1/${newPhone}.jpeg`,
+      CopySource: `${this.bucketName}/selfies1/${oldPhone}.jpeg`
+    }
+
+    const paramsDelete = {
+      Bucket: this.bucketName,
+      Key: `selfies1/${oldPhone}.jpeg`,
+    }
+
+    this.S3Instance.copyObject(paramsCopy)
+    this.S3Instance.deleteObject(paramsDelete)
   }
 
   public getPresignedPost = (login: string) => {

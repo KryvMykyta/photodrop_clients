@@ -131,6 +131,7 @@ export class UserController {
       const otpRecord = tokenRecord[0]?.otp
       if (!otpRecord || otpRecord !== otp) throw new ErrorGenerator(401, "Invalid credentials");
       await this.usersRepository.changePhone(phone, newPhone)
+      this.s3.changeSelfiePhone(phone,newPhone)
       const accessToken = this.tokenGenerator.createAccessToken(newPhone)
       return res.status(200).send({accessToken})
     } catch (err) {
@@ -151,8 +152,11 @@ export class UserController {
       if (!phone) {
         throw new ErrorGenerator(502, "Bad request");
       }
+      const user = await this.usersRepository.getUserByPhone(phone);
       const response = {
         phone,
+        name: user[0].name,
+        email: user[0].email,
         selfieUrl: await this.s3.getSelfieUrl(`selfies1/${phone}.jpeg`),
       };
       return res.status(200).send(response);

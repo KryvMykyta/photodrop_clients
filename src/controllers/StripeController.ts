@@ -93,9 +93,9 @@ export class StripeController {
           // Then define and call a function to handle the event checkout.session.completed
           if (status === "paid") {
             const { metadata } = checkoutSessionCompleted;
-            if (!metadata || !metadata.phoneNumber || !metadata.albumID) return response.status(502).send("Bad request");
-            const { phoneNumber, albumID } = metadata;
-            await this.usersRepository.addAlbum(phoneNumber, albumID);
+            if (!metadata || !metadata.phone || !metadata.albumID) return response.status(502).send("Bad request");
+            const { phone, albumID } = metadata;
+            await this.usersRepository.addAlbum(phone, albumID);
             // ... handle other event types
             break;
           }
