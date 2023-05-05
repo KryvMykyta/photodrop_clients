@@ -32,7 +32,7 @@ export class S3Repository {
     return this.S3Instance.getSignedUrl('getObject',params)
   }
 
-  public changeSelfiePhone = (oldPhone: string, newPhone: string) => {
+  public changeSelfiePhone = async (oldPhone: string, newPhone: string) => {
     const paramsCopy = {
       Bucket: this.bucketName,
       Key: `selfies1/${newPhone}.jpeg`,
@@ -44,8 +44,8 @@ export class S3Repository {
       Key: `selfies1/${oldPhone}.jpeg`,
     }
 
-    this.S3Instance.copyObject(paramsCopy)
-    this.S3Instance.deleteObject(paramsDelete)
+    await this.S3Instance.copyObject(paramsCopy).promise()
+    await this.S3Instance.deleteObject(paramsDelete).promise()
   }
 
   public getPresignedPost = (login: string) => {
@@ -62,5 +62,4 @@ export class S3Repository {
     }
     return this.S3Instance.createPresignedPost(params)
   }
-
 }

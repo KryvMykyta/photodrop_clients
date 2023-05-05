@@ -131,7 +131,7 @@ export class UserController {
       const otpRecord = tokenRecord[0]?.otp
       if (!otpRecord || otpRecord !== otp) throw new ErrorGenerator(401, "Invalid credentials");
       await this.usersRepository.changePhone(phone, newPhone)
-      this.s3.changeSelfiePhone(phone,newPhone)
+      await this.s3.changeSelfiePhone(phone,newPhone)
       const accessToken = this.tokenGenerator.createAccessToken(newPhone)
       return res.status(200).send({accessToken})
     } catch (err) {
