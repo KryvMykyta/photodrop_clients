@@ -150,8 +150,8 @@ export class PhotosController {
   ) => {
     try {
       const { phone } = req.body;
-      const albums = await this.photoRepository.getUsersPhotos(phone);
-      const uniqueAlbums = new DataFormatter().getAlbumsOfUser(albums);
+      const photos = await this.photoRepository.getUsersPhotos(phone);
+      const uniqueAlbums = new DataFormatter().getAlbumsOfUser(photos);
 
       const boughtAlbums = await this.usersRepository.getBoughtAlbums(phone);
       const responseAlbums = uniqueAlbums.map((album) => {
@@ -170,7 +170,6 @@ export class PhotosController {
         photoID: string;
         url: string;
       }[] = [];
-      const photos = await this.photoRepository.getUsersPhotos(phone);
       uniqueAlbums.map((album) => {
         const formattedRecords = new DataFormatter().getAlbumPhotos(
           photos,
