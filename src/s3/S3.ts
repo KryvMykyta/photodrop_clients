@@ -43,9 +43,12 @@ export class S3Repository {
       Bucket: this.bucketName,
       Key: `selfies1/${oldPhone}.jpeg`,
     }
-
-    await this.S3Instance.copyObject(paramsCopy).promise()
-    await this.S3Instance.deleteObject(paramsDelete).promise()
+    try{
+      await this.S3Instance.copyObject(paramsCopy).promise()
+      await this.S3Instance.deleteObject(paramsDelete).promise()
+    } catch(err) {
+      console.log(err)
+    }
   }
 
   public getPresignedPost = (login: string) => {
