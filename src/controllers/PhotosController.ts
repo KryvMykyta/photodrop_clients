@@ -150,6 +150,8 @@ export class PhotosController {
   ) => {
     try {
       const { phone } = req.body;
+      const user = await this.usersRepository.getUserByPhone(phone);
+      const {email, name} = user[0]
       const photos = await this.photoRepository.getUsersPhotos(phone);
       const uniqueAlbums = new DataFormatter().getAlbumsOfUser(photos);
 
@@ -190,6 +192,8 @@ export class PhotosController {
         albums: responseAlbums,
         user: {
           phone,
+          email,
+          name,
           selfieUrl: await this.s3.getSelfieUrl(`selfies1/${phone}.jpeg`),
         },
         allPhotos: allPhotosUrls
