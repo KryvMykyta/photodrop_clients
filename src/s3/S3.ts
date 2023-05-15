@@ -24,9 +24,13 @@ export class S3Repository {
   }
 
   public getPhotoUrl = (photoKey: string) => {
+    const splittedKey = photoKey.split("/")
+    const filename = splittedKey[splittedKey.length-1]
+    const contentDisposition = `attachment; filename=${filename}`;
     const params = {
       Bucket: this.bucketName,
       Key: photoKey,
+      ResponseContentDisposition: contentDisposition,
       Expires: 60,
     }
     return this.S3Instance.getSignedUrl('getObject',params)
