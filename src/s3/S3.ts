@@ -31,7 +31,7 @@ export class S3Repository {
       Bucket: this.bucketName,
       Key: photoKey,
       ResponseContentDisposition: contentDisposition,
-      Expires: 60,
+      Expires: 6*60*60,
     }
     return this.S3Instance.getSignedUrl('getObject',params)
   }
