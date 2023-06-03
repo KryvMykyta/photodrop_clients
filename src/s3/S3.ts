@@ -17,7 +17,7 @@ export class S3Repository {
     }
     try {
       await this.S3Instance.headObject(params).promise();
-      return this.S3Instance.getSignedUrl('getObject', params);
+      return this.getPhotoUrl(photoKey)
     } catch (error) {
       return null
     }
