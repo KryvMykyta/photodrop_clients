@@ -7,4 +7,4 @@ export const otpTokens = sqliteTable('otps', {
   createdAt: real('createdat').notNull()
 })
 
-export type OtpType = InferModel<typeof otpTokens>
+export type OtpToken = InferModel<typeof otpTokens>

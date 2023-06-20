@@ -1,14 +1,15 @@
 import { NextFunction, Request, RequestHandler, Response } from "express";
 import { ErrorGenerator } from "./../utils/ErrorGenerator";
 import { TokenGenerator } from "./../utils/Tokens";
-import { UtilsClasses } from "app";
-import { OtpRepository } from "./../repository/OtpsRepository";
 import { UsersRepository } from "./../repository/UsersRepository";
 
 export class AuthMiddlewareClass {
   tokenGenerator: TokenGenerator;
   usersRepository: UsersRepository;
-  constructor(tokenGenerator: TokenGenerator, usersRepository: UsersRepository) {
+  constructor(
+    tokenGenerator: TokenGenerator,
+    usersRepository: UsersRepository
+  ) {
     this.tokenGenerator = tokenGenerator;
     this.usersRepository = usersRepository;
   }

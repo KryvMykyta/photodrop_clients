@@ -1,6 +1,5 @@
 import { InferModel } from 'drizzle-orm';
 import {
-    integer,
     pgTable,
     text
   } from 'drizzle-orm/pg-core';

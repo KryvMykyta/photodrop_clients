@@ -13,4 +13,4 @@ export const userphotos = pgTable("userphotos", {
   photoID: text("photoid").notNull()
 });
 
-export type UsersType = InferModel<typeof users>;
+export type User = InferModel<typeof users>;

@@ -1,16 +1,8 @@
-type PhotosResponse = {
-  photoID: string;
-  albumID: string;
-  login: string;
-  albumName: string | null;
-  albumDate: string | null;
-  location: string | null;
-}[];
+import { UserAlbums, PhotoS3Data, AlbumPhoto } from "./../types/types";
+
 
 export class DataFormatter {
-  public getAlbumsOfUser = (
-    photosRecords: PhotosResponse,
-  ) => {
+  public getAlbumsOfUser = (photosRecords: AlbumPhoto[]): UserAlbums[] => {
     const albums = [
       ...new Set(
         photosRecords.map((photoRecord) => {
@@ -18,7 +10,7 @@ export class DataFormatter {
         })
       ),
     ];
-    const cacheAlbums: { [key: string]: PhotosResponse } = {};
+    const cacheAlbums: { [key: string]: AlbumPhoto[] } = {};
     albums.map((album) => {
       if (!Object.keys(cacheAlbums).includes(album)) {
         cacheAlbums[album] = photosRecords.filter(
@@ -38,11 +30,12 @@ export class DataFormatter {
     });
     return albumsResponse;
   };
+
   public getAlbumPhotos = (
-    photosRecords: PhotosResponse,
+    photosRecords: AlbumPhoto[],
     albumID: string,
     isBought: boolean
-  ) => {
+  ): PhotoS3Data[] => {
     const records = photosRecords
       .filter((photoRecord) => albumID === photoRecord.albumID)
       .map((photoRecord) => {

@@ -1,48 +1,26 @@
 import { ErrorGenerator } from "./../utils/ErrorGenerator";
 import { UtilsClasses } from "./../app";
-import { Request, Response, Router } from "express";
+import { Request, Response } from "express";
 import { TokenGenerator } from "./../utils/Tokens";
 import { OtpRepository } from "./../repository/OtpsRepository";
-import { UsersRepository } from "repository/UsersRepository";
-import { AuthMiddlewareClass } from "middlewares/AuthMiddleware";
-import { PhotoRepository } from "repository/PhotosRepository";
+import { UsersRepository } from "./../repository/UsersRepository";
+import { PhotoRepository } from "./../repository/PhotosRepository";
 import { DataFormatter } from "./../utils/DataFormatter";
 import { S3Repository } from "./../s3/S3";
+import { AlbumsResponse, PhotoResponse, AlbumPhoto } from "types/types";
 
 export class PhotosController {
-  router: Router;
-  path: string;
   tokenGenerator: TokenGenerator;
   otpRepository: OtpRepository;
   usersRepository: UsersRepository;
-  authMiddleware: AuthMiddlewareClass;
   photoRepository: PhotoRepository;
   s3: S3Repository;
-  constructor(path: string, utilsClasses: UtilsClasses) {
-    (this.router = Router()), (this.path = path);
+  constructor(utilsClasses: UtilsClasses) {
     this.s3 = utilsClasses.s3;
     this.usersRepository = utilsClasses.usersRepository;
-    this.tokenGenerator = utilsClasses.tokenClass;
+    this.tokenGenerator = utilsClasses.tokenGenerator;
     this.otpRepository = utilsClasses.otpRepository;
-    this.authMiddleware = utilsClasses.authMiddleware;
     this.photoRepository = utilsClasses.photoRepository;
-    this.router.get(
-      "/photos",
-      this.authMiddleware.isAuthorized,
-      this.getPhotosInAlbum
-    );
-    this.router.get(
-      "/albums",
-      this.authMiddleware.isAuthorized,
-      this.getAlbums
-    );
-    this.router.get(
-      "/addSelfie",
-      this.authMiddleware.isAuthorized,
-      this.addSelfie
-    );
-    this.router.get("/getMe", this.authMiddleware.isAuthorized, this.getMe);
-    this.router.get("/getPhoto", this.authMiddleware.isAuthorized, this.getPhoto);
   }
 
   public getPhoto = async (
@@ -55,11 +33,13 @@ export class PhotosController {
       if (!phone || !photoID) {
         throw new ErrorGenerator(502, "Bad request");
       }
-      const photo = await this.photoRepository.getPhoto(photoID)
-      const {albumID, photographerLogin} = photo
-      const isBought = await this.usersRepository.isBoughtAlbum(phone, albumID)
-      const photoKey = isBought ? `original/${photographerLogin}/${albumID}/${photoID}` : `watermark/${photographerLogin}/${albumID}/${photoID}`
-      const responseURL = this.s3.getPhotoUrl(photoKey)
+      const photo = await this.photoRepository.getPhoto(photoID);
+      const { albumID, photographerLogin } = photo;
+      const isBought = await this.usersRepository.isBoughtAlbum(phone, albumID);
+      const photoKey = isBought
+        ? `original/${photographerLogin}/${albumID}/${photoID}`
+        : `watermark/${photographerLogin}/${albumID}/${photoID}`;
+      const responseURL = this.s3.getPhotoUrl(photoKey);
       return res.status(200).send(responseURL);
     } catch (err) {
       console.log(err);
@@ -151,27 +131,23 @@ export class PhotosController {
     try {
       const { phone } = req.body;
       const user = await this.usersRepository.getUserByPhone(phone);
-      const {email, name} = user[0]
+      const { email, name } = user[0];
       const photos = await this.photoRepository.getUsersPhotos(phone);
       const uniqueAlbums = new DataFormatter().getAlbumsOfUser(photos);
 
       const boughtAlbums = await this.usersRepository.getBoughtAlbums(phone);
-      const responseAlbums = uniqueAlbums.map((album) => {
-          return {
-            albumID: album.albumID,
-            name: album.name,
-            date: album.date,
-            location: album.location,
-            isPaid: boughtAlbums.includes(album.albumID),
-            url: this.s3.getPhotoUrl(`thumbnail/${album.key}`),
-          };
-        }
-      );
+      const responseAlbums: AlbumsResponse[] = uniqueAlbums.map((album) => {
+        return {
+          albumID: album.albumID,
+          name: album.name,
+          date: album.date,
+          location: album.location,
+          isPaid: boughtAlbums.includes(album.albumID),
+          url: this.s3.getPhotoUrl(`thumbnail/${album.key}`),
+        };
+      });
 
-      let allPhotosUrls: {
-        photoID: string;
-        url: string;
-      }[] = [];
+      let allPhotosUrls: PhotoResponse[] = [];
       uniqueAlbums.map((album) => {
         const formattedRecords = new DataFormatter().getAlbumPhotos(
           photos,
@@ -185,8 +161,8 @@ export class PhotosController {
             url: this.s3.getPhotoUrl(record.key),
           };
         });
-        allPhotosUrls = [...allPhotosUrls, ...photosResponse]
-      })
+        allPhotosUrls = [...allPhotosUrls, ...photosResponse];
+      });
 
       const response = {
         albums: responseAlbums,
@@ -196,7 +172,7 @@ export class PhotosController {
           name,
           selfieUrl: await this.s3.getSelfieUrl(`selfies1/${phone}.jpeg`),
         },
-        allPhotos: allPhotosUrls
+        allPhotos: allPhotosUrls,
       };
       return res.status(200).send(response);
     } catch (err) {

@@ -1,42 +1,31 @@
 import { ErrorGenerator } from "./../utils/ErrorGenerator";
 import { UtilsClasses } from "./../app";
-import { Request, Response, Router } from "express";
+import { Request, Response } from "express";
 import Stripe from "stripe";
 import { UsersRepository } from "./../repository/UsersRepository";
-import { AuthMiddlewareClass } from "./../middlewares/AuthMiddleware";
+import { StripeRequestBody } from "./../types/types";
 
 export class StripeController {
-  router: Router;
-  path: string;
   stripe: Stripe;
   usersRepository: UsersRepository;
-  authMiddleware: AuthMiddlewareClass;
-  constructor(path: string, utilsClasses: UtilsClasses) {
-    (this.router = Router()), (this.path = path);
+  constructor(utilsClasses: UtilsClasses) {
     this.stripe = utilsClasses.stripe;
     this.usersRepository = utilsClasses.usersRepository;
-    this.authMiddleware = utilsClasses.authMiddleware
-    this.router.post("/payment", this.authMiddleware.isAuthorized, this.createPaymentLink);
-    this.router.post("/webhook", this.handleWebhook);
   }
 
   public createPaymentLink = async (
     req: Request<
       {},
       {},
-      {
-        successLink: string;
-        failLink: string;
-        albumID: string;
-        phone: string;
-      },
+      StripeRequestBody,
       {}
     >,
     res: Response
   ) => {
     try {
-      const { albumID, phone ,successLink,failLink } = req.body;
-      if (await this.usersRepository.isBoughtAlbum(phone,albumID)) throw new ErrorGenerator(400, "You already bought this album");
+      const { albumID, phone, successLink, failLink } = req.body;
+      if (await this.usersRepository.isBoughtAlbum(phone, albumID))
+        throw new ErrorGenerator(400, "You already bought this album");
       const session = await this.stripe.checkout.sessions.create({
         mode: "payment",
         payment_method_types: ["card"],
@@ -89,11 +78,12 @@ export class StripeController {
         case "checkout.session.completed":
           const checkoutSessionCompleted = event.data.object;
           console.log(checkoutSessionCompleted);
-          const status = checkoutSessionCompleted.payment_status
+          const status = checkoutSessionCompleted.payment_status;
           // Then define and call a function to handle the event checkout.session.completed
           if (status === "paid") {
             const { metadata } = checkoutSessionCompleted;
-            if (!metadata || !metadata.phone || !metadata.albumID) return response.status(502).send("Bad request");
+            if (!metadata || !metadata.phone || !metadata.albumID)
+              return response.status(502).send("Bad request");
             const { phone, albumID } = metadata;
             await this.usersRepository.addAlbum(phone, albumID);
             // ... handle other event types

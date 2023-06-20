@@ -1,5 +1,5 @@
 import { drizzle, BetterSQLite3Database } from "drizzle-orm/better-sqlite3";
-import { OtpType, otpTokens } from "./../schemas/otpTable";
+import { OtpToken, otpTokens } from "./../schemas/otpTable";
 import { eq, and, gte, lte } from "drizzle-orm/expressions";
 import { Database } from "better-sqlite3";
 
@@ -18,7 +18,7 @@ export class OtpRepository {
       .where(eq(otpTokens.phone, phone))
       .all();
     if (!phoneRecord[0]) {
-      const newOtp: OtpType = {
+      const newOtp: OtpToken = {
         otp,
         phone,
         createdAt: new Date().getTime(),
@@ -26,20 +26,25 @@ export class OtpRepository {
       this.db.insert(otpTokens).values(newOtp).run();
       return;
     }
-    this.db.update(otpTokens)
-      .set({ otp, createdAt: new Date().getTime()})
+    this.db
+      .update(otpTokens)
+      .set({ otp, createdAt: new Date().getTime() })
       .where(eq(otpTokens.phone, phone))
       .run();
-    this.db.delete(otpTokens).where(lte(otpTokens.createdAt, new Date().getTime() - 120*1000))
+    this.db
+      .delete(otpTokens)
+      .where(lte(otpTokens.createdAt, new Date().getTime() - 120 * 1000));
   };
 
-  public getToken = (phone: string) => {
-    const timeStart = new Date().getTime() - 120*1000
+  public getToken = (phone: string): OtpToken[] => {
+    const timeStart = new Date().getTime() - 120 * 1000;
     const phoneRecord = this.db
       .select()
       .from(otpTokens)
-      .where(and(eq(otpTokens.phone, phone),gte(otpTokens.createdAt,timeStart)))
+      .where(
+        and(eq(otpTokens.phone, phone), gte(otpTokens.createdAt, timeStart))
+      )
       .all();
-    return phoneRecord
-  }
+    return phoneRecord;
+  };
 }
